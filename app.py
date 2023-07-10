@@ -93,29 +93,6 @@ def chatbot_interaction(summarized_text, question):
 
 def generate_response(message, resume_text):
     response = ""
-
-    if "experience" in message.lower():
-        # Extract and generate response about experience
-        experience_section = extract_experience(resume_text)
-        response = f"Experience:\n{experience_section}"
-
-    elif "achievements" in message.lower():
-        # Extract and generate response about achievements and certificates
-        achievements_section = extract_achievements(resume_text)
-        certificates_section = extract_certificates(resume_text)
-        response = f"Achievements:\n{achievements_section}\n\nCertificates:\n{certificates_section}"
-
-    elif "education" in message.lower():
-        # Extract and generate response about education
-        education_section = extract_education(resume_text)
-        response = f"Education:\n{education_section}"
-
-    elif "projects" in message.lower():
-        # Extract and generate response about projects
-        projects_section = extract_projects(resume_text)
-        response = f"Projects:\n{projects_section}"
-
-    else:
         # Generate response using chatbot interaction
         response = chatbot_interaction(resume_text, message)
 
