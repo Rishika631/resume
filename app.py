@@ -155,7 +155,7 @@ def main():
             for message in chat_history:
                 st.write(message)
         elif projects_button:
-            user_input = "Projects and Links"
+            user_input = "Projects and Github Links"
             chat_history.append("You: " + user_input)
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
@@ -172,7 +172,7 @@ def main():
                 st.write(message)
         elif experience_button:
             user_input = "Experience"
-            chat_history.append("You: " + user_input)
+            chat_history.append("You: " + user_input+"List")
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
             st.subheader("Chat History")
