@@ -1,23 +1,35 @@
 import streamlit as st
-import PyPDF2
+import pdfplumber
 import re
 import openai
 
 openai.api_key = "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"
 
-def load_resume_text():
-    pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
+def load_resume_text(pdf_path):
     resume_text = ""
 
     with open(pdf_path, 'rb') as file:
-        reader = PyPDF2.PdfReader(file)
-        num_pages = len(reader.pages)
-
-        for page_num in range(num_pages):
-            page = reader.pages[page_num]
-            resume_text += page.extract_text()
+        reader = pdfplumber.load(file)
+        for page in reader.pages:
+            text = page.extract_text()
+            resume_text += text
 
     return resume_text
+
+def extract_links_from_pdf(pdf_path):
+    hyperlinks = []
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            annotations = page.annotations
+
+            for annotation in annotations:
+                if annotation["subtype"] == "Link":
+                    if "URI" in annotation:
+                        hyperlink = annotation["URI"]
+                        hyperlinks.append(hyperlink)
+
+    return hyperlinks
 
 def summarize_text(resume_text):
     response = openai.Completion.create(
@@ -32,53 +44,12 @@ def summarize_text(resume_text):
     summary = response.choices[0].text.strip()
     return summary
 
-def extract_experience(resume_text):
-    experience_section = ""
-    experience_pattern = r"EXPERIENCE[\s\S]*?(?=ACHIEVEMENTS|EDUCATION|SKILLS\sSUMMARY|PROJECTS|\Z)"
-    matches = re.findall(experience_pattern, resume_text, re.IGNORECASE)
-    if matches:
-        experience_section = matches[0].strip()
-    return experience_section
-
-def extract_achievements(resume_text):
-    achievements_section = ""
-    achievements_pattern = r"ACHIEVEMENTS[\s\S]*?(?=EXPERIENCE|EDUCATION|SKILLS\sSUMMARY|PROJECTS|CERTIFICATES|\Z)"
-    matches = re.findall(achievements_pattern, resume_text, re.IGNORECASE)
-    if matches:
-        achievements_section = matches[0].strip()
-    return achievements_section
-
-def extract_education(resume_text):
-    education_section = ""
-    education_pattern = r"EDUCATION[\s\S]*?(?=EXPERIENCE|ACHIEVEMENTS|SKILLS\sSUMMARY|PROJECTS|\Z)"
-    matches = re.findall(education_pattern, resume_text, re.IGNORECASE)
-    if matches:
-        education_section = matches[0].strip()
-    return education_section
-
-
-def extract_projects(resume_text):
-    projects_section = ""
-    projects_pattern = r"PROJECTS[\s\S]*?(?=EXPERIENCE|ACHIEVEMENTS|EDUCATION|SKILLS\sSUMMARY|\Z)"
-    matches = re.findall(projects_pattern, resume_text, re.IGNORECASE)
-    if matches:
-        projects_section = matches[0].strip()
-    return projects_section
-
-def extract_certificates(resume_text):
-    certificates_section = ""
-    certificates_pattern = r"CERTIFICATES[\s\S]*?(?=EXPERIENCE|ACHIEVEMENTS|EDUCATION|SKILLS\sSUMMARY|PROJECTS|\Z)"
-    matches = re.findall(certificates_pattern, resume_text, re.IGNORECASE)
-    if matches:
-        certificates_section = matches[0].strip()
-    return certificates_section
-
 def chatbot_interaction(summarized_text, question):
     # Use LangChain API or any other OpenAI model API for chatbot
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=f"Transcript: {summarized_text}\nQuestion: {question}",
-        max_tokens=300,
+        max_tokens=75,
         temperature=0.7,
         top_p=1.0,
         frequency_penalty=0.0,
@@ -93,19 +64,23 @@ def chatbot_interaction(summarized_text, question):
 
 def generate_response(message, resume_text):
     response = ""
-        # Generate response using chatbot interaction
+
+    # Summarize the resume text and generate response
+    summarized_text = summarize_text(resume_text)
     response = chatbot_interaction(resume_text, message)
 
     return response
-
-
 
 def main():
     st.title("Resume Chatbot")
     st.write("Welcome! Start a conversation with the chatbot.")
 
     # Load the resume text from the PDF
-    resume_text = load_resume_text()
+    pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
+    resume_text = load_resume_text(pdf_path)
+
+    # Extract links from the PDF
+    extracted_links = extract_links_from_pdf(pdf_path)
 
     # Chatbot conversation loop
     user_input = st.text_input("You:")
@@ -121,6 +96,12 @@ def main():
         for i in range(0, len(chat_history), 2):
             st.write("You: " + chat_history[i])
             st.write("Chatbot: " + chat_history[i + 1])
+
+        # Display the extracted links
+        if any(keyword in user_input.lower() for keyword in ["links", "hyperlinks"]):
+            st.subheader("Extracted Links")
+            for link in extracted_links:
+                st.write(link)
 
 if __name__ == "__main__":
     main()
