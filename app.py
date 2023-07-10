@@ -2,14 +2,19 @@ import streamlit as st
 import PyPDF2
 import re
 
+
 def load_resume_text():
-    pdf_path = 'https://github.com/Rishika631/resume/blob/main/Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
+    pdf_url = 'https://example.com/your-resume.pdf'  # Update with the URL to your resume PDF file
     resume_text = ""
 
-    with open(pdf_path, 'rb') as file:
+    response = requests.get(pdf_url)
+    with open('temp_resume.pdf', 'wb') as file:
+        file.write(response.content)
+
+    with open('temp_resume.pdf', 'rb') as file:
         reader = PyPDF2.PdfReader(file)
         num_pages = len(reader.pages)
-        
+
         for page_num in range(num_pages):
             page = reader.pages[page_num]
             resume_text += page.extract_text()
