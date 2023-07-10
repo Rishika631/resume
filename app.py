@@ -88,7 +88,7 @@ def generate_response(message, resume_text):
     return response
 
 def main():
-    st.sidebar.title("Resume Chatbot")
+    st.sidebar.title("Rishika Agrawal's Resume Chatbot")
     option = st.sidebar.radio("Select Option", ["Chatbot", "Resume"])
 
     if option == "Chatbot":
@@ -216,7 +216,8 @@ def main():
         # Load and display the resume image
         image_path = 'resumeimage.jpg'  # Update with the path to your resume image file
         image = Image.open(image_path)
-        st.image(image, st.markdown("[Click here to view the resume with hyperlinks](https://drive.google.com/file/d/1fXKS4A11qdVOrjB-woYNf3_4MAuv4xOV/view?usp=sharing)"), use_column_width=True)
+        st.image(image, caption='Rishika Agrawal', use_column_width=True)
+        st.markdown("[                          Click here to view the resume with hyperlinks](https://drive.google.com/file/d/1fXKS4A11qdVOrjB-woYNf3_4MAuv4xOV/view?usp=sharing)")
         
 
 if __name__ == "__main__":
