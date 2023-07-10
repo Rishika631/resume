@@ -78,7 +78,7 @@ def chatbot_interaction(summarized_text, question):
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=f"Transcript: {summarized_text}\nQuestion: {question}",
-        max_tokens=75,
+        max_tokens=300,
         temperature=0.7,
         top_p=1.0,
         frequency_penalty=0.0,
