@@ -1,5 +1,6 @@
 import streamlit as st
-import pdfplumber
+import PyPDF2
+import re
 import re
 import openai
 
