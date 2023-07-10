@@ -36,7 +36,15 @@ def extract_links_from_pdf(pdf_path):
 
     return hyperlinks
 
+def extract_certificate_links(resume_text):
+    certificate_links = []
 
+    pattern = r"https:\/\/drive\.google\.com\/[^\s\/$?#].[^\s]*"
+    matches = re.finditer(pattern, resume_text, re.IGNORECASE)
+    for match in matches:
+        certificate_links.append(match.group())
+
+    return certificate_links
 
 def summarize_text(resume_text):
     response = openai.Completion.create(
@@ -52,7 +60,6 @@ def summarize_text(resume_text):
     return summary
 
 def chatbot_interaction(summarized_text, question):
-    # Use LangChain API or any other OpenAI model API for chatbot
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=f"Transcript: {summarized_text}\nQuestion: {question}",
@@ -89,6 +96,9 @@ def main():
     # Extract links from the PDF
     extracted_links = extract_links_from_pdf(pdf_path)
 
+    # Extract certificate links from the resume text
+    certificate_links = extract_certificate_links(resume_text)
+
     # Chatbot conversation loop
     user_input = st.text_input("You:")
     chat_history = []
@@ -109,6 +119,15 @@ def main():
             st.subheader("Extracted Links")
             for link in extracted_links:
                 st.write(link)
+
+        # Display the certificate links
+        if "certificates" in user_input.lower():
+            st.subheader("Certificate Links")
+            if certificate_links:
+                for certificate_link in certificate_links:
+                    st.write(certificate_link)
+            else:
+                st.write("No certificate links found.")
 
 if __name__ == "__main__":
     main()
