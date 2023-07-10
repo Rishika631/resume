@@ -8,7 +8,7 @@ from langchain.llms import OpenAI
 from langchain.callbacks import get_openai_callback
 
 # streamlit run app.py
-
+openai.api_key = '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'
 def main():
     load_dotenv()
     st.set_page_config(page_title="Ask your PDF")
