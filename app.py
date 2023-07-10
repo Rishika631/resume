@@ -19,7 +19,7 @@ def load_resume_text():
 
     return resume_text
 
-def summarize_text(text):
+def summarize_text(resume_text):
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=text,
