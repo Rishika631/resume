@@ -34,7 +34,7 @@ def summarize_text(resume_text):
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=resume_text,
-        max_tokens=150,
+        max_tokens=250,
         temperature=0.7,
         top_p=1.0,
         frequency_penalty=0.0,
@@ -48,7 +48,7 @@ def chatbot_interaction(summarized_text, question):
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=f"Transcript: {summarized_text}\nQuestion: {question}",
-        max_tokens=75,
+        max_tokens=300,
         temperature=0.7,
         top_p=1.0,
         frequency_penalty=0.0,
