@@ -1,13 +1,11 @@
 import streamlit as st
 import PyPDF2
 import re
-import re
 import openai
 
 openai.api_key = "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"
 
-def load_resume_text():
-    pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
+def load_resume_text(pdf_path):
     resume_text = ""
 
     with open(pdf_path, 'rb') as file:
