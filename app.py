@@ -15,7 +15,7 @@ def main():
     st.header("Ask your PDF 💬")
 
     # Specify the PDF path from the repository
-    pdf_path = 'https://raw.githubusercontent.com/your-username/your-repository/main/your-pdf-file.pdf'
+    pdf_path = 'https://github.com/Rishika631/resume/blob/main/Rishika_Agrawal_resumeofficial.pdf'
 
     # Load the PDF content from the specified path
     pdf = PdfReader(pdf_path)
