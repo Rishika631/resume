@@ -216,8 +216,8 @@ def main():
         # Load and display the resume image
         image_path = 'resumeimage.jpg'  # Update with the path to your resume image file
         image = Image.open(image_path)
-        st.image(image, caption='Resume', use_column_width=True)
-        st.markdown("                  [Click here to view the resume with hyperlinks](https://drive.google.com/file/d/1fXKS4A11qdVOrjB-woYNf3_4MAuv4xOV/view?usp=sharing)")
+        st.image(image, caption='st.markdown("[Click here to view the resume with hyperlinks](https://drive.google.com/file/d/1fXKS4A11qdVOrjB-woYNf3_4MAuv4xOV/view?usp=sharing)")', use_column_width=True)
+        
 
 if __name__ == "__main__":
     main()
