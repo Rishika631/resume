@@ -148,15 +148,15 @@ def main():
         # Handle autoprompt button clicks
         if education_button:
             user_input = "Education"
-            chat_history.append("You: " + user_input)
+            chat_history.append("You: " + user_input+" give in points")
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
             st.subheader("Chat History")
             for message in chat_history:
                 st.write(message)
         elif projects_button:
-            user_input = "Projects and Github Links"
-            chat_history.append("You: " + user_input)
+            user_input = "Projects and Links"
+            chat_history.append("You: " + user_input+" List")
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
             st.subheader("Chat History")
@@ -164,7 +164,7 @@ def main():
                 st.write(message)
         elif achievements_button:
             user_input = "Achievements"
-            chat_history.append("You: " + user_input)
+            chat_history.append("You: " + user_input+" give in points")
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
             st.subheader("Chat History")
