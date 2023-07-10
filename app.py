@@ -1,8 +1,8 @@
 import streamlit as st
+from PIL import Image
 import PyPDF2
 import re
 import openai
-from pdf2image import convert_from_path
 
 openai.api_key = "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"
 
@@ -90,10 +90,8 @@ def main():
     st.title("Resume Chatbot")
     st.write("Welcome! Start a conversation with the chatbot.")
 
-    # Specify the path to your resume PDF file
-    pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'
-
     # Load the resume text from the PDF
+    pdf_path = 'path/to/your/resume.pdf'
     resume_text = load_resume_text(pdf_path)
 
     # Extract links from the PDF
@@ -102,49 +100,43 @@ def main():
     # Extract certificate links from the resume text
     certificate_links = extract_certificate_links(resume_text)
 
-    # Convert PDF pages to images
-    images = convert_from_path(pdf_path)
+    # Display image and chatbot in side-by-side columns
+    col1, col2 = st.beta_columns(2)
 
-    # Display the chatbot interface
-    chat_container = st.beta_container()
-    resume_container = st.beta_container()
+    # Display the image
+    image_path = 'path/to/your/image.jpg'
+    image = Image.open(image_path)
+    col1.image(image, use_column_width=True)
 
-    with chat_container:
-        # Chatbot conversation loop
-        user_input = st.text_input("You:")
-        chat_history = []
+    # Chatbot conversation loop
+    user_input = col2.text_input("You:")
+    chat_history = []
 
-        if user_input:
-            chat_history.append(user_input)
-            response = generate_response(user_input, resume_text)
-            chat_history.append(response)
+    if user_input:
+        chat_history.append(user_input)
+        response = generate_response(user_input, resume_text)
+        chat_history.append(response)
 
-            # Display the chat history
-            st.subheader("Chat History")
-            for i in range(0, len(chat_history), 2):
-                st.write("You: " + chat_history[i])
-                st.write("Chatbot: " + chat_history[i + 1])
+        # Display the chat history
+        col2.subheader("Chat History")
+        for i in range(0, len(chat_history), 2):
+            col2.write("You: " + chat_history[i])
+            col2.write("Chatbot: " + chat_history[i + 1])
 
-            # Display the extracted links
-            if any(keyword in user_input.lower() for keyword in ["links", "hyperlinks"]):
-                st.subheader("Extracted Links")
-                for link in extracted_links:
-                    st.write(link)
+        # Display the extracted links
+        if any(keyword in user_input.lower() for keyword in ["links", "hyperlinks"]):
+            col2.subheader("Extracted Links")
+            for link in extracted_links:
+                col2.write(link)
 
-            # Display the certificate links
-            if "certificates" in user_input.lower():
-                st.subheader("Certificate Links")
-                if certificate_links:
-                    for certificate_link in certificate_links:
-                        st.write(certificate_link)
-                else:
-                    st.write("No certificate links found.")
-
-    with resume_container:
-        # Display the resume as images
-        st.subheader("Resume")
-        for image in images:
-            st.image(image)
+        # Display the certificate links
+        if "certificates" in user_input.lower():
+            col2.subheader("Certificate Links")
+            if certificate_links:
+                for certificate_link in certificate_links:
+                    col2.write(certificate_link)
+            else:
+                col2.write("No certificate links found.")
 
 if __name__ == "__main__":
     main()
