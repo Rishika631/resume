@@ -25,15 +25,17 @@ def extract_links_from_pdf(pdf_path):
         reader = PyPDF2.PdfReader(file)
         for page in reader.pages:
             text = page.extract_text()
+
+            # Find regular hyperlinks
             matches = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
             hyperlinks.extend(matches)
-            
+
             # Find Google Drive links
-            google_drive_matches = re.findall(r'(?:https?:\/\/)?(?:www\.)?drive.google.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9-_]+)', text)
-            google_drive_links = ['https://drive.google.com/file/d/' + match for match in google_drive_matches]
-            hyperlinks.extend(google_drive_links)
+            google_drive_matches = re.findall(r'https?:\/\/drive.google.com\/[^\s/$.?#].[^\s]*', text)
+            hyperlinks.extend(google_drive_matches)
 
     return hyperlinks
+
 
 
 def summarize_text(resume_text):
