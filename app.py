@@ -1,7 +1,7 @@
 import streamlit as st
 import PyPDF2
 import re
-
+import requests
 
 def load_resume_text():
     pdf_url = 'https://github.com/Rishika631/resume/blob/main/Rishika_Agrawal_resumeofficial.pdf'  # Update with the URL to your resume PDF file
