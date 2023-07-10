@@ -1,8 +1,8 @@
 import streamlit as st
+from PIL import Image
 import PyPDF2
 import re
 import openai
-from PIL import Image
 
 openai.api_key = "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"
 
@@ -87,56 +87,60 @@ def generate_response(message, resume_text):
     return response
 
 def main():
-    st.title("Resume Chatbot")
-    st.write("Welcome! Start a conversation with the chatbot.")
+    st.sidebar.title("Resume Chatbot")
+    option = st.sidebar.radio("Select Option", ["Chatbot", "Resume"])
 
-    # Load the resume text from the PDF
-    pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
-    resume_text = load_resume_text(pdf_path)
+    if option == "Chatbot":
+        st.title("Chatbot")
+        st.write("Welcome! Start a conversation with the chatbot.")
 
-    # Extract links from the PDF
-    extracted_links = extract_links_from_pdf(pdf_path)
+        # Load the resume text from the PDF
+        pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
+        resume_text = load_resume_text(pdf_path)
 
-    # Extract certificate links from the resume text
-    certificate_links = extract_certificate_links(resume_text)
+        # Extract links from the PDF
+        extracted_links = extract_links_from_pdf(pdf_path)
 
-    # Set up layout
-    col1, col2 = st.beta_columns(2)
+        # Extract certificate links from the resume text
+        certificate_links = extract_certificate_links(resume_text)
 
-    # Display the image
-    image_path = 'resumeimage.jpg'
-    image = Image.open(image_path)
-    col1.image(image, use_column_width=True)
+        # Chatbot conversation loop
+        user_input = st.text_input("You:")
+        chat_history = []
 
-    # Chatbot conversation loop
-    user_input = col2.text_input("You:")
-    chat_history = []
+        if user_input:
+            chat_history.append(user_input)
+            response = generate_response(user_input, resume_text)
+            chat_history.append(response)
 
-    if user_input:
-        chat_history.append(user_input)
-        response = generate_response(user_input, resume_text)
-        chat_history.append(response)
+            # Display the chat history
+            st.subheader("Chat History")
+            for i in range(0, len(chat_history), 2):
+                st.write("You: " + chat_history[i])
+                st.write("Chatbot: " + chat_history[i + 1])
 
-        # Display the chat history
-        col2.subheader("Chat History")
-        for i in range(0, len(chat_history), 2):
-            col2.write("You: " + chat_history[i])
-            col2.write("Chatbot: " + chat_history[i + 1])
+            # Display the extracted links
+            if any(keyword in user_input.lower() for keyword in ["links", "hyperlinks"]):
+                st.subheader("Extracted Links")
+                for link in extracted_links:
+                    st.write(link)
 
-        # Display the extracted links
-        if any(keyword in user_input.lower() for keyword in ["links", "hyperlinks"]):
-            col2.subheader("Extracted Links")
-            for link in extracted_links:
-                col2.write(link)
+            # Display the certificate links
+            if "certificates" in user_input.lower():
+                st.subheader("Certificate Links")
+                if certificate_links:
+                    for certificate_link in certificate_links:
+                        st.write(certificate_link)
+                else:
+                    st.write("No certificate links found.")
 
-        # Display the certificate links
-        if "certificates" in user_input.lower():
-            col2.subheader("Certificate Links")
-            if certificate_links:
-                for certificate_link in certificate_links:
-                    col2.write(certificate_link)
-            else:
-                col2.write("No certificate links found.")
+    elif option == "Resume":
+        st.title("Resume")
+        # Load and display the resume PDF
+        pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with thepath to your resume PDF file
+        with open(pdf_path, 'rb') as file:
+            pdf_data = file.read()
+        st.write(pdf_data)
 
 if __name__ == "__main__":
     main()
