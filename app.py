@@ -151,41 +151,65 @@ def main():
             chat_history.append("You: " + user_input)
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
+            st.subheader("Chat History")
+            for message in chat_history:
+                st.write(message)
         elif projects_button:
             user_input = "Projects and Links"
             chat_history.append("You: " + user_input)
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
+            st.subheader("Chat History")
+            for message in chat_history:
+                st.write(message)
         elif achievements_button:
             user_input = "Achievements"
             chat_history.append("You: " + user_input)
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
+            st.subheader("Chat History")
+            for message in chat_history:
+                st.write(message)
         elif experience_button:
             user_input = "Experience"
             chat_history.append("You: " + user_input)
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
+            st.subheader("Chat History")
+            for message in chat_history:
+                st.write(message)
         elif github_button:
             user_input = "GitHub Profile"
             chat_history.append("You: " + user_input)
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
+            st.subheader("Chat History")
+            for message in chat_history:
+                st.write(message)
         elif linkedin_button:
             user_input = "LinkedIn Profile"
             chat_history.append("You: " + user_input)
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
+            st.subheader("Chat History")
+            for message in chat_history:
+                st.write(message)
         elif email_button:
             user_input = "Email"
             chat_history.append("You: " + user_input)
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
+            st.subheader("Chat History")
+            for message in chat_history:
+                st.write(message)
         elif mobile_button:
             user_input = "Mobile Number"
             chat_history.append("You: " + user_input)
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
+            st.subheader("Chat History")
+            for message in chat_history:
+                st.write(message)
 
     elif option == "Resume":
         st.title("Resume")
