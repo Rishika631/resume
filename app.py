@@ -56,13 +56,6 @@ def extract_education(resume_text):
         education_section = matches[0].strip()
     return education_section
 
-def extract_skills_summary(resume_text):
-    skills_summary_section = ""
-    skills_summary_pattern = r"SKILLS\sSUMMARY[\s\S]*?(?=EXPERIENCE|ACHIEVEMENTS|EDUCATION|PROJECTS|\Z)"
-    matches = re.findall(skills_summary_pattern, resume_text, re.IGNORECASE)
-    if matches:
-        skills_summary_section = matches[0].strip()
-    return skills_summary_section
 
 def extract_projects(resume_text):
     projects_section = ""
@@ -116,11 +109,6 @@ def generate_response(message, resume_text):
         # Extract and generate response about education
         education_section = extract_education(resume_text)
         response = f"Education:\n{education_section}"
-
-    elif "skills" in message.lower() or "summary" in message.lower():
-        # Extract and generate response about skills summary
-        skills_summary_section = extract_skills_summary(resume_text)
-        response = f"Skills Summary:\n{skills_summary_section}"
 
     elif "projects" in message.lower():
         # Extract and generate response about projects
