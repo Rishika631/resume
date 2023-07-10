@@ -106,13 +106,13 @@ def main():
         certificate_links = extract_certificate_links(resume_text)
 
         # Autoprompt buttons
-        row1_col1, row1_col2, row1_col3, row1_col4 = st.beta_columns(4)
+        row1_col1, row1_col2, row1_col3, row1_col4 = st.columns(4)
         education_button = row1_col1.button("Education")
         projects_button = row1_col2.button("Projects and Links")
         achievements_button = row1_col3.button("Achievements")
         experience_button = row1_col4.button("Experience")
 
-        row2_col1, row2_col2, row2_col3, row2_col4 = st.beta_columns(4)
+        row2_col1, row2_col2, row2_col3, row2_col4 = st.columns(4)
         github_button = row2_col1.button("GitHub Profile")
         linkedin_button = row2_col2.button("LinkedIn Profile")
         email_button = row2_col3.button("Email")
