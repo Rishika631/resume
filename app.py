@@ -99,8 +99,16 @@ def main():
     # Extract certificate links from the resume text
     certificate_links = extract_certificate_links(resume_text)
 
+    # Set up layout
+    col1, col2 = st.beta_columns([2, 3])
+
+    # Display the resume PDF
+    col1.subheader("Resume")
+    with open(pdf_path, 'rb') as file:
+        col1.write(file.read())
+
     # Chatbot conversation loop
-    user_input = st.text_input("You:")
+    user_input = col2.text_input("You:")
     chat_history = []
 
     if user_input:
@@ -109,25 +117,25 @@ def main():
         chat_history.append(response)
 
         # Display the chat history
-        st.subheader("Chat History")
+        col2.subheader("Chat History")
         for i in range(0, len(chat_history), 2):
-            st.write("You: " + chat_history[i])
-            st.write("Chatbot: " + chat_history[i + 1])
+            col2.write("You: " + chat_history[i])
+            col2.write("Chatbot: " + chat_history[i + 1])
 
         # Display the extracted links
         if any(keyword in user_input.lower() for keyword in ["links", "hyperlinks"]):
-            st.subheader("Extracted Links")
+            col2.subheader("Extracted Links")
             for link in extracted_links:
-                st.write(link)
+                col2.write(link)
 
         # Display the certificate links
         if "certificates" in user_input.lower():
-            st.subheader("Certificate Links")
+            col2.subheader("Certificate Links")
             if certificate_links:
                 for certificate_link in certificate_links:
-                    st.write(certificate_link)
+                    col2.write(certificate_link)
             else:
-                st.write("No certificate links found.")
+                col2.write("No certificate links found.")
 
 if __name__ == "__main__":
     main()
