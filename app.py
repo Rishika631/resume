@@ -19,15 +19,12 @@ def load_resume_text(pdf_path):
 def extract_links_from_pdf(pdf_path):
     hyperlinks = []
 
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            annotations = page.annotations
-
-            for annotation in annotations:
-                if annotation["subtype"] == "Link":
-                    if "URI" in annotation:
-                        hyperlink = annotation["URI"]
-                        hyperlinks.append(hyperlink)
+    with open(pdf_path, 'rb') as file:
+        reader = PyPDF2.PdfReader(file)
+        for page in reader.pages:
+            text = page.extract_text()
+            matches = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+            hyperlinks.extend(matches)
 
     return hyperlinks
 
