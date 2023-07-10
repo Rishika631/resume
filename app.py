@@ -94,7 +94,7 @@ def chatbot_interaction(summarized_text, question):
 def generate_response(message, resume_text):
     response = ""
         # Generate response using chatbot interaction
-        response = chatbot_interaction(resume_text, message)
+    response = chatbot_interaction(resume_text, message)
 
     return response
 
