@@ -105,6 +105,16 @@ def main():
         # Extract certificate links from the resume text
         certificate_links = extract_certificate_links(resume_text)
 
+        # Autoprompt buttons
+        education_button = st.button("Education")
+        projects_button = st.button("Projects and Links")
+        achievements_button = st.button("Achievements")
+        experience_button = st.button("Experience")
+        github_button = st.button("GitHub Profile")
+        linkedin_button = st.button("LinkedIn Profile")
+        email_button = st.button("Email")
+        mobile_button = st.button("Mobile Number")
+
         # Chatbot conversation loop
         user_input = st.text_input("You:")
         chat_history = []
@@ -132,8 +142,48 @@ def main():
                 if certificate_links:
                     for certificate_link in certificate_links:
                         st.write(certificate_link)
-                else:
-                    st.write("No certificate links found.")
+
+        # Handle autoprompt button clicks
+        if education_button:
+            user_input = "Education"
+            chat_history.append(user_input)
+            response = generate_response(user_input, resume_text)
+            chat_history.append(response)
+        elif projects_button:
+            user_input = "Projects and Links"
+            chat_history.append(user_input)
+            response = generate_response(user_input, resume_text)
+            chat_history.append(response)
+        elif achievements_button:
+            user_input = "Achievements"
+            chat_history.append(user_input)
+            response = generate_response(user_input, resume_text)
+            chat_history.append(response)
+        elif experience_button:
+            user_input = "Experience"
+            chat_history.append(user_input)
+            response = generate_response(user_input, resume_text)
+            chat_history.append(response)
+        elif github_button:
+            user_input = "GitHub Profile"
+            chat_history.append(user_input)
+            response = generate_response(user_input, resume_text)
+            chat_history.append(response)
+        elif linkedin_button:
+            user_input = "LinkedIn Profile"
+            chat_history.append(user_input)
+            response = generate_response(user_input, resume_text)
+            chat_history.append(response)
+        elif email_button:
+            user_input = "Email"
+            chat_history.append(user_input)
+            response = generate_response(user_input, resume_text)
+            chat_history.append(response)
+        elif mobile_button:
+            user_input = "Mobile Number"
+            chat_history.append(user_input)
+            response = generate_response(user_input, resume_text)
+            chat_history.append(response)
 
     elif option == "Resume":
         st.title("Resume")
