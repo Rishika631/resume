@@ -1,6 +1,10 @@
 import streamlit as st
 import PyPDF2
 import re
+from langchain.summarization import summarize_text
+import openai
+
+openai.api_key = "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"
 
 def load_resume_text():
     pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
@@ -9,7 +13,7 @@ def load_resume_text():
     with open(pdf_path, 'rb') as file:
         reader = PyPDF2.PdfReader(file)
         num_pages = len(reader.pages)
-        
+
         for page_num in range(num_pages):
             page = reader.pages[page_num]
             resume_text += page.extract_text()
@@ -26,7 +30,7 @@ def extract_experience(resume_text):
 
 def extract_achievements(resume_text):
     achievements_section = ""
-    achievements_pattern = r"ACHIEVEMENTS[\s\S]*?(?=EXPERIENCE|EDUCATION|SKILLS\sSUMMARY|PROJECTS|\Z)"
+    achievements_pattern = r"ACHIEVEMENTS[\s\S]*?(?=EXPERIENCE|EDUCATION|SKILLS\sSUMMARY|PROJECTS|CERTIFICATES|\Z)"
     matches = re.findall(achievements_pattern, resume_text, re.IGNORECASE)
     if matches:
         achievements_section = matches[0].strip()
@@ -56,6 +60,14 @@ def extract_projects(resume_text):
         projects_section = matches[0].strip()
     return projects_section
 
+def extract_certificates(resume_text):
+    certificates_section = ""
+    certificates_pattern = r"CERTIFICATES[\s\S]*?(?=EXPERIENCE|ACHIEVEMENTS|EDUCATION|SKILLS\sSUMMARY|PROJECTS|\Z)"
+    matches = re.findall(certificates_pattern, resume_text, re.IGNORECASE)
+    if matches:
+        certificates_section = matches[0].strip()
+    return certificates_section
+
 def generate_response(message, resume_text):
     response = ""
 
@@ -65,9 +77,10 @@ def generate_response(message, resume_text):
         response = f"Experience:\n{experience_section}"
 
     elif "achievements" in message.lower():
-        # Extract and generate response about achievements
+        # Extract and generate response about achievements and certificates
         achievements_section = extract_achievements(resume_text)
-        response = f"Achievements:\n{achievements_section}"
+        certificates_section = extract_certificates(resume_text)
+        response = f"Achievements:\n{achievements_section}\n\nCertificates:\n{certificates_section}"
 
     elif "education" in message.lower():
         # Extract and generate response about education
@@ -85,9 +98,29 @@ def generate_response(message, resume_text):
         response = f"Projects:\n{projects_section}"
 
     else:
-        response = "I'm sorry, I couldn't understand your question."
+        # Summarize the resume text and generate response
+        summarized_text = summarize_text(resume_text)
+        response = chatbot_interaction(summarized_text, message)
 
     return response
+
+def chatbot_interaction(transcript, question):
+    # Use LangChain API or any other OpenAI model API for chatbot
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=f"Transcript: {transcript}\nQuestion: {question}",
+        max_tokens=75,
+        temperature=0.7,
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0
+    )
+    answer = response.choices[0].text.strip()
+
+    if answer:
+        return answer
+    else:
+        return "I'm sorry, I don't have an answer for that question."
 
 def main():
     st.title("Resume Chatbot")
@@ -107,7 +140,7 @@ def main():
 
         # Display the chat history
         st.subheader("Chat History")
-        for i in range(0, len(chat_history), 3):
+        for i in range(0, len(chat_history), 2):
             st.write("You: " + chat_history[i])
             st.write("Chatbot: " + chat_history[i + 1])
 
