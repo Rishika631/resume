@@ -172,7 +172,7 @@ def main():
                 st.write(message)
         elif experience_button:
             user_input = "Experience"
-            chat_history.append("You: " + "EXPERIENCE")
+            chat_history.append("You: " + user_input+" in hackathons and challenges")
             response = generate_response(user_input, resume_text)
             chat_history.append("Chatbot: " + response)
             st.subheader("Chat History")
