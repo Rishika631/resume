@@ -20,6 +20,19 @@ def load_resume_text():
 
     return resume_text
 
+def summarize_text(text):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=text,
+        max_tokens=100,
+        temperature=0.7,
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0
+    )
+    summary = response.choices[0].text.strip()
+    return summary
+
 def extract_experience(resume_text):
     experience_section = ""
     experience_pattern = r"EXPERIENCE[\s\S]*?(?=ACHIEVEMENTS|EDUCATION|SKILLS\sSUMMARY|PROJECTS|\Z)"
