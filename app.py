@@ -27,8 +27,14 @@ def extract_links_from_pdf(pdf_path):
             text = page.extract_text()
             matches = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
             hyperlinks.extend(matches)
+            
+            # Find Google Drive links
+            google_drive_matches = re.findall(r'(?:https?:\/\/)?(?:www\.)?drive.google.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9-_]+)', text)
+            google_drive_links = ['https://drive.google.com/file/d/' + match for match in google_drive_matches]
+            hyperlinks.extend(google_drive_links)
 
     return hyperlinks
+
 
 def summarize_text(resume_text):
     response = openai.Completion.create(
