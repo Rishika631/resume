@@ -80,6 +80,24 @@ def extract_certificates(resume_text):
         certificates_section = matches[0].strip()
     return certificates_section
 
+def chatbot_interaction(transcript, question):
+    # Use LangChain API or any other OpenAI model API for chatbot
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=f"Transcript: {transcript}\nQuestion: {question}",
+        max_tokens=75,
+        temperature=0.7,
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0
+    )
+    answer = response.choices[0].text.strip()
+
+    if answer:
+        return answer
+    else:
+        return "I'm sorry, I don't have an answer for that question."
+
 def generate_response(message, resume_text):
     response = ""
 
@@ -116,23 +134,6 @@ def generate_response(message, resume_text):
 
     return response
 
-def chatbot_interaction(transcript, question):
-    # Use LangChain API or any other OpenAI model API for chatbot
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=f"Transcript: {transcript}\nQuestion: {question}",
-        max_tokens=75,
-        temperature=0.7,
-        top_p=1.0,
-        frequency_penalty=0.0,
-        presence_penalty=0.0
-    )
-    answer = response.choices[0].text.strip()
-
-    if answer:
-        return answer
-    else:
-        return "I'm sorry, I don't have an answer for that question."
 
 def main():
     st.title("Resume Chatbot")
