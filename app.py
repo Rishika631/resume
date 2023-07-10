@@ -22,8 +22,8 @@ def load_resume_text():
 def summarize_text(resume_text):
     response = openai.Completion.create(
         engine="text-davinci-003",
-        prompt=text,
-        max_tokens=100,
+        prompt=resume_text,
+        max_tokens=150,
         temperature=0.7,
         top_p=1.0,
         frequency_penalty=0.0,
