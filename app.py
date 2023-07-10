@@ -1,4 +1,5 @@
 import streamlit as st
+import requests
 from PIL import Image
 import PyPDF2
 import re
@@ -136,11 +137,10 @@ def main():
 
     elif option == "Resume":
         st.title("Resume")
-        # Load and display the resume PDF
-        pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with thepath to your resume PDF file
-        with open(pdf_path, 'rb') as file:
-            pdf_data = file.read()
-        st.write(pdf_data)
+        # Load and display the resume image
+        image_path = 'resumeimage.jpg'  # Update with the path to your resume image file
+        image = Image.open(image_path)
+        st.image(image, caption='Resume', use_column_width=True)
 
 if __name__ == "__main__":
     main()
