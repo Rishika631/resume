@@ -20,7 +20,17 @@ def load_pdf_content():
 
     return pdf_content
 
-
+def generate_chatbot_response(message):
+    response = openai.Completion.create(
+        engine='text-davinci-003',
+        prompt=f"You: {message}\nAssistant:",
+        max_tokens=100,
+        n=1,
+        stop=None,
+        temperature=0.7
+    )
+    return response.choices[0].text.strip()
+    
 def extract_experience(resume_content):
     experience_section = ""
     # Find the experience section based on a specific pattern in the resume content
