@@ -1,7 +1,6 @@
 import streamlit as st
 import PyPDF2
 import re
-from langchain.summarization import summarize_text
 import openai
 
 openai.api_key = "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"
