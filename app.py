@@ -1,8 +1,8 @@
 import streamlit as st
-from PIL import Image
 import PyPDF2
 import re
 import openai
+from PIL import Image
 
 openai.api_key = "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"
 
@@ -91,7 +91,7 @@ def main():
     st.write("Welcome! Start a conversation with the chatbot.")
 
     # Load the resume text from the PDF
-    pdf_path = 'path/to/your/resume.pdf'
+    pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
     resume_text = load_resume_text(pdf_path)
 
     # Extract links from the PDF
@@ -100,7 +100,7 @@ def main():
     # Extract certificate links from the resume text
     certificate_links = extract_certificate_links(resume_text)
 
-    # Display image and chatbot in side-by-side columns
+    # Set up layout
     col1, col2 = st.beta_columns(2)
 
     # Display the image
