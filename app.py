@@ -104,7 +104,7 @@ def main():
     col1, col2 = st.beta_columns(2)
 
     # Display the image
-    image_path = 'path/to/your/image.jpg'
+    image_path = 'resumeimage.jpg'
     image = Image.open(image_path)
     col1.image(image, use_column_width=True)
 
