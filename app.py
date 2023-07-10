@@ -116,11 +116,11 @@ def generate_response(message, resume_text):
         response = f"Projects:\n{projects_section}"
 
     else:
-        # Summarize the resume text and generate response
-        summarized_text = summarize_text(resume_text)
-        response = chatbot_interaction(summarized_text, message)
+        # Generate response using chatbot interaction
+        response = chatbot_interaction(resume_text, message)
 
     return response
+
 
 
 def main():
