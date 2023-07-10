@@ -4,7 +4,7 @@ import re
 
 
 def load_resume_text():
-    pdf_url = 'https://example.com/your-resume.pdf'  # Update with the URL to your resume PDF file
+    pdf_url = 'https://github.com/Rishika631/resume/blob/main/Rishika_Agrawal_resumeofficial.pdf'  # Update with the URL to your resume PDF file
     resume_text = ""
 
     response = requests.get(pdf_url)
