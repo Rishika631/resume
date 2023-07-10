@@ -73,11 +73,11 @@ def extract_certificates(resume_text):
         certificates_section = matches[0].strip()
     return certificates_section
 
-def chatbot_interaction(transcript, question):
+def chatbot_interaction(summarized_text, question):
     # Use LangChain API or any other OpenAI model API for chatbot
     response = openai.Completion.create(
         engine="text-davinci-003",
-        prompt=f"Transcript: {transcript}\nQuestion: {question}",
+        prompt=f"Transcript: {summarized_text}\nQuestion: {question}",
         max_tokens=75,
         temperature=0.7,
         top_p=1.0,
