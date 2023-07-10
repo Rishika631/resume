@@ -3,7 +3,7 @@ import PyPDF2
 import re
 
 def load_resume_text():
-    pdf_path = 'path/to/your/resume.pdf'  # Update with the path to your resume PDF file
+    pdf_path = 'https://github.com/Rishika631/resume/blob/main/Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
     resume_text = ""
 
     with open(pdf_path, 'rb') as file:
