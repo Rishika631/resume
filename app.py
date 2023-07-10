@@ -1,3 +1,4 @@
+import re
 import streamlit as st
 import openai
 import PyPDF2
@@ -20,16 +21,64 @@ def load_pdf_content():
     return pdf_content
 
 
-def generate_response(message):
-    response = openai.Completion.create(
-        engine='text-davinci-003',
-        prompt=f"You: {message}\nAssistant:",
-        max_tokens=100,
-        n=1,
-        stop=None,
-        temperature=0.7
-    )
-    return response.choices[0].text.strip()
+def extract_experience(resume_content):
+    experience_section = ""
+    # Find the experience section based on a specific pattern in the resume content
+    pattern = r"EXPERIENCE(.*?)EDUCATION"
+    match = re.search(pattern, resume_content, re.IGNORECASE | re.DOTALL)
+    if match:
+        experience_section = match.group(1).strip()
+    return experience_section
+
+def extract_achievements(resume_content):
+    achievements_section = ""
+    # Find the achievements section based on a specific pattern in the resume content
+    pattern = r"ACHIEVEMENTS & CERTIFICATES(.*?)EXPERIENCE"
+    match = re.search(pattern, resume_content, re.IGNORECASE | re.DOTALL)
+    if match:
+        achievements_section = match.group(1).strip()
+    return achievements_section
+
+def extract_links(resume_content):
+    links = []
+    # Find all the hyperlinks in the resume content using regular expression pattern matching
+    pattern = r"\[(.*?)\]\((.*?)\)"
+    matches = re.findall(pattern, resume_content)
+    for match in matches:
+        link_text, link_url = match
+        links.append((link_text, link_url))
+    return links
+
+def generate_response(message, resume_content):
+    response = ""
+    
+    # Check if the message is related to the resume content
+    if "experience" in message.lower():
+        # Extract the experience section from the resume content
+        experience_section = extract_experience(resume_content)
+        response = "Here is Rishika's experience:\n" + experience_section
+        
+    elif "achievements" in message.lower():
+        # Extract the achievements section from the resume content
+        achievements_section = extract_achievements(resume_content)
+        response = "Here are Rishika's achievements:\n" + achievements_section
+        
+    elif "linkedin" in message.lower():
+        # Extract the LinkedIn profile link from the resume content
+        links = extract_links(resume_content)
+        linkedin_links = [(text, url) for (text, url) in links if "linkedin" in url]
+        if linkedin_links:
+            response = "Here is Rishika's LinkedIn profile:\n"
+            for text, url in linkedin_links:
+                response += f"- [{text}]({url})\n"
+        else:
+            response = "Rishika's LinkedIn profile link is not available."
+    
+    else:
+        response = generate_chatbot_response(message)  # Replace with your chatbot's logic
+        
+    return response
+
 
 def main():
     st.title("Conversational Form Chatbot")
@@ -48,7 +97,7 @@ def main():
 
     if user_input:
         chat_history.append(user_input)
-        response = generate_response(user_input)
+        response = generate_response(user_input, pdf_content)
         chat_history.append(response)
 
         # Display the chat history
