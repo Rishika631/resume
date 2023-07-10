@@ -108,7 +108,7 @@ def main():
         # Autoprompt buttons
         row1_col1, row1_col2, row1_col3, row1_col4 = st.columns(4)
         education_button = row1_col1.button("Education")
-        projects_button = row1_col2.button("Projects and Github Links")
+        projects_button = row1_col2.button("Projects and Links")
         achievements_button = row1_col3.button("Achievements")
         experience_button = row1_col4.button("Experience")
 
