@@ -6,14 +6,17 @@ import openai
 
 openai.api_key = "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"
 
-def load_resume_text(pdf_path):
+def load_resume_text():
+    pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
     resume_text = ""
 
     with open(pdf_path, 'rb') as file:
-        reader = pdfplumber.load(file)
-        for page in reader.pages:
-            text = page.extract_text()
-            resume_text += text
+        reader = PyPDF2.PdfReader(file)
+        num_pages = len(reader.pages)
+
+        for page_num in range(num_pages):
+            page = reader.pages[page_num]
+            resume_text += page.extract_text()
 
     return resume_text
 
