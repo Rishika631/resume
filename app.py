@@ -6,7 +6,7 @@ import PyPDF2
 openai.api_key = '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'
 
 def load_pdf_content():
-    pdf_path = '/path/to/resume.pdf'  # Update with the path to your PDF file
+    pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your PDF file
     pdf_content = ""
 
     with open(pdf_path, 'rb') as file:
