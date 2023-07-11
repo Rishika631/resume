@@ -14,3 +14,4 @@ openai
 spacy
 pandas 
 plotly
+SpeechRecognition
