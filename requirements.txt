@@ -14,4 +14,4 @@ openai
 spacy
 pandas 
 plotly
-speech_recognition==23.1.2
+speech_recognition>=2.1.3
