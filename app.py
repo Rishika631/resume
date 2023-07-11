@@ -3,7 +3,6 @@ import os
 import pandas as pd
 import streamlit as st
 import moviepy.editor as mp
-import speech_recognition as sr
 from youtube_transcript_api import YouTubeTranscriptApi
 from urllib.parse import urlparse, parse_qs
 from transformers import pipeline
