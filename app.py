@@ -7,6 +7,9 @@ import moviepy.editor as mp
 import os
 from transformers import pipeline
 from urllib.parse import urlparse, parse_qs
+import pandas as pd
+import plotly.express as px
+import speech_recognition as sr
 
 # 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 -new api key - kartik
 
@@ -42,7 +45,47 @@ def summarize_transcript(transcript):
         presence_penalty=0.0
     )
     summary = response.choices[0].text.strip()
-    return summary
+
+    persons = re.findall(r"\b[A-Z][a-zA-Z]+\b", transcript)  # Extract persons mentioned in the transcript
+    persons = list(set(persons))  # Remove duplicates
+
+    return summary, persons
+
+
+def calculate_contribution(tasks_with_persons):
+    tasks_df = pd.DataFrame(tasks_with_persons)
+    contribution_df = tasks_df["person"].value_counts().reset_index()
+    contribution_df.columns = ["Person", "Tasks Assigned"]
+    total_tasks = contribution_df["Tasks Assigned"].sum()
+    contribution_df["Contribution"] = contribution_df["Tasks Assigned"] / total_tasks * 100
+    return contribution_df
+
+
+# Function to extract transcript from video
+def extract_transcript(video_path):
+    transcript = ""
+    
+    # Convert video to audio
+    audio_path = "temp_audio.wav"
+    video = mp.VideoFileClip(video_path)
+    video.audio.write_audiofile(audio_path)
+
+    # Use Google Speech Recognition to extract transcript
+    r = sr.Recognizer()
+    with sr.AudioFile(audio_path) as source:
+        audio = r.record(source)
+
+    try:
+        transcript = r.recognize_google(audio)
+    except sr.UnknownValueError:
+        st.error("Speech recognition could not understand audio")
+    except sr.RequestError as e:
+        st.error("Could not request results from Google Speech Recognition service; {0}".format(e))
+
+    # Remove temporary audio file
+    os.remove(audio_path)
+
+    return transcript
 
 
 # Function to extract Image Summary from the video using moviepy
@@ -87,7 +130,7 @@ def analyze_sentiment(transcript):
 # Function to extract a given task 
 
 def extract_task_from_transcript(transcript, task):
-    prompt = f"{task} from the following transcript and mention to whome the task is given:\n\n{transcript}"
+    prompt = f"{task} from the following transcript and mention to whom the task is given:\n\n{transcript}"
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=prompt,
@@ -98,7 +141,15 @@ def extract_task_from_transcript(transcript, task):
         presence_penalty=0.0
     )
     tasks = response.choices[0].text.strip().split("\n")
-    return tasks
+    tasks_with_persons = []
+
+    for task in tasks:
+        task_info = task.split(" - ")
+        if len(task_info) == 2:
+            tasks_with_persons.append({"task": task_info[0], "person": task_info[1]})
+
+    return tasks_with_persons
+
 
 
 
@@ -142,7 +193,7 @@ def main():
             st.info("Meeting processed successfully!")
 
             # Display options
-            options = st.sidebar.multiselect("Select Options:", ["Meeting Summary", "Image Summary", "Action Insights & Key Points", "Sentiment Analysis", "Given Task", "Chatbot"])
+            options = st.sidebar.multiselect("Select Options:", ["Meeting Summary", "Image Summary", "Action Insights & Key Points", "Sentiment Analysis", "Given Task", "Contribution Chart"])
 
             # Meeting Summary
             if "Meeting Summary" in options:
@@ -174,9 +225,15 @@ def main():
             # Given Task
             if "Given Task" in options:
                 st.subheader("Given Task")
-                tasks = extract_task_from_transcript(transcript, "Extract task")
-                for task in tasks:
-                    st.write(task)
+                tasks_with_persons = extract_task_from_transcript(transcript, "Extract task")
+                tasks_df = pd.DataFrame(tasks_with_persons)
+                st.dataframe(tasks_df)
+
+            if "Contribution Chart" in options:
+                st.subheader("Contribution Chart")
+                contribution_df = calculate_contribution(tasks_with_persons)
+                fig = px.pie(contribution_df, values='Contribution', names='Person')
+                st.plotly_chart(fig)
             
             # Chatbot
             if "Chatbot" in options:
