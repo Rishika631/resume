@@ -1,59 +1,42 @@
-import streamlit as st
-import requests
-from PIL import Image
-import PyPDF2
+import spacy
 import re
+import streamlit as st
 import openai
+from youtube_transcript_api import YouTubeTranscriptApi
+import moviepy.editor as mp
+import os
+from transformers import pipeline
+from urllib.parse import urlparse, parse_qs
 
-openai.api_key = "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"
+# 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 -new api key - kartik
 
-def load_resume_text(pdf_path):
-    resume_text = ""
+# Set OpenAI API credentials
+openai.api_key = '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'
 
-    with open(pdf_path, 'rb') as file:
-        reader = PyPDF2.PdfReader(file)
-        num_pages = len(reader.pages)
+# Set Streamlit page configuration
+st.set_page_config(page_title="YouTube Video Summarizer and Insights")
 
-        for page_num in range(num_pages):
-            page = reader.pages[page_num]
-            resume_text += page.extract_text()
+# Function to extract transcript from YouTube video
+def extract_transcript(youtube_video):
+    video_id = youtube_video.split("=")[1]
+    transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
-    return resume_text
+    transcript_text = ""
+    for segment in transcript:
+        transcript_text += segment['text'] + " "
 
-def extract_links_from_pdf(pdf_path):
-    hyperlinks = []
+    return transcript_text
 
-    with open(pdf_path, 'rb') as file:
-        reader = PyPDF2.PdfReader(file)
-        for page in reader.pages:
-            text = page.extract_text()
 
-            # Find regular hyperlinks
-            matches = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
-            hyperlinks.extend(matches)
 
-            # Find Google Drive links
-            google_drive_matches = re.findall(r'https?:\/\/drive.google.com\/[^\s/$.?#].[^\s]*', text)
-            hyperlinks.extend(google_drive_matches)
-
-    return hyperlinks
-
-def extract_certificate_links(resume_text):
-    certificate_links = []
-
-    pattern = r"https:\/\/drive\.google\.com\/[^\s\/$?#].[^\s]*"
-    matches = re.finditer(pattern, resume_text, re.IGNORECASE)
-    for match in matches:
-        certificate_links.append(match.group())
-
-    return certificate_links
-
-def summarize_text(resume_text):
+# Function to summarize transcript using OpenAI's text Meeting Summary model
+def summarize_transcript(transcript):
+    prompt = "Extract summary from the following transcript in 100 words:\n\n" + transcript
     response = openai.Completion.create(
         engine="text-davinci-003",
-        prompt=resume_text,
-        max_tokens=250,
-        temperature=0.7,
+        prompt=prompt,
+        max_tokens=200,
+        temperature=0.3,
         top_p=1.0,
         frequency_penalty=0.0,
         presence_penalty=0.0
@@ -61,11 +44,71 @@ def summarize_text(resume_text):
     summary = response.choices[0].text.strip()
     return summary
 
-def chatbot_interaction(summarized_text, question):
+
+# Function to extract Image Summary from the video using moviepy
+def extract_image_summary(video_path):
+    clip = mp.VideoFileClip(video_path)
+    duration = clip.duration
+    key_frames = []
+    image_summary = []
+
+    # Extract key frames at desired intervals
+    for i in range(10):
+        time = duration * i / 10
+        frame = clip.get_frame(time)
+        key_frames.append(frame)
+        image_summary.append(f"Key Point {i+1}")
+
+    return key_frames, image_summary
+
+# Function to extract action insights & Key Points from transcript 
+def extract_action_insights(transcript):
+    prompt = "Extract action insights and key points both from the following transcript:\n\n" + transcript
     response = openai.Completion.create(
         engine="text-davinci-003",
-        prompt=f"Transcript: {summarized_text}\nQuestion: {question}",
-        max_tokens=300,
+        prompt=prompt,
+        max_tokens=200,
+        temperature=0.3,
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0
+    )
+    insights = response.choices[0].text.strip().split("\n")
+    return insights
+
+
+def analyze_sentiment(transcript):
+    sentiment_analyzer = pipeline("sentiment-analysis")
+    results = sentiment_analyzer(transcript)
+
+    sentiments = [result["label"] for result in results]
+    return sentiments
+
+# Function to extract a given task 
+
+def extract_task_from_transcript(transcript, task):
+    prompt = f"{task} from the following transcript and mention to whome the task is given:\n\n{transcript}"
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=200,
+        temperature=0.3,
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0
+    )
+    tasks = response.choices[0].text.strip().split("\n")
+    return tasks
+
+
+
+# Function to perform chatbot interaction
+def chatbot_interaction(transcript, question):
+    # Use LangChain API or any other OpenAI model API for chatbot
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=f"Transcript: {transcript}\nQuestion: {question}",
+        max_tokens=75,
         temperature=0.7,
         top_p=1.0,
         frequency_penalty=0.0,
@@ -78,148 +121,137 @@ def chatbot_interaction(summarized_text, question):
     else:
         return "I'm sorry, I don't have an answer for that question."
 
-def generate_response(message, resume_text):
-    response = ""
-
-    # Summarize the resume text and generate response
-    summarized_text = summarize_text(resume_text)
-    response = chatbot_interaction(resume_text, message)
-
-    return response
-
+# Streamlit app
 def main():
-    st.sidebar.title("Rishika Agrawal's Resume Chatbot")
-    option = st.sidebar.radio("Select Option", ["Chatbot", "Resume"])
+    st.header("YouTube Video Summarizer and Insights")
 
-    if option == "Chatbot":
-        st.title("Chatbot")
-        st.write("Welcome! Start a conversation with the chatbot.")
+    # Option to upload local file or enter YouTube video URL
+    option = st.selectbox("Choose an option:", ["YouTube Video", "Local File"])
 
-        # Load the resume text from the PDF
-        pdf_path = 'Rishika_Agrawal_resumeofficial.pdf'  # Update with the path to your resume PDF file
-        resume_text = load_resume_text(pdf_path)
+    if option == "YouTube Video":
+        # Get YouTube video URL from user
+        youtube_video = st.text_input("Enter the YouTube video URL:")
 
-        # Extract links from the PDF
-        extracted_links = extract_links_from_pdf(pdf_path)
+        if youtube_video:
+            # Extract transcript from YouTube video
+            transcript = extract_transcript(youtube_video)
 
-        # Extract certificate links from the resume text
-        certificate_links = extract_certificate_links(resume_text)
+            # Summarize transcript
+            summary = summarize_transcript(transcript)
 
-        # Autoprompt buttons
-        row1_col1, row1_col2, row1_col3, row1_col4 = st.columns(4)
-        education_button = row1_col1.button("Education")
-        projects_button = row1_col2.button("Projects and Links")
-        achievements_button = row1_col3.button("Achievements")
-        experience_button = row1_col4.button("Experience")
+            st.info("Meeting processed successfully!")
 
-        row2_col1, row2_col2, row2_col3, row2_col4 = st.columns(4)
-        github_button = row2_col1.button("GitHub Profile")
-        linkedin_button = row2_col2.button("LinkedIn Profile")
-        email_button = row2_col3.button("Email")
-        mobile_button = row2_col4.button("Mobile Number")
+            # Display options
+            options = st.sidebar.multiselect("Select Options:", ["Meeting Summary", "Image Summary", "Action Insights & Key Points", "Sentiment Analysis", "Given Task", "Chatbot"])
 
-        # Chatbot conversation loop
-        user_input = st.text_input("You:")
-        chat_history = []
+            # Meeting Summary
+            if "Meeting Summary" in options:
+                st.subheader("Meeting Summary")
+                st.text(summary)
 
-        if user_input:
-            chat_history.append("You: " + user_input)
-            response = generate_response(user_input, resume_text)
-            chat_history.append("Chatbot: " + response)
+            # Image Summary
+            if "Image Summary" in options:
+                st.subheader("Image Summary")
+                key_frames, image_summary = extract_image_summary(youtube_video)
+                for idx, key_frame in enumerate(key_frames):
+                    st.image(key_frame, caption=f"Key Frame {idx+1}")
+                    st.write(image_summary[idx])
 
-            # Display the chat history
-            st.subheader("Chat History")
-            for message in chat_history:
-                st.write(message)
+            # Action Insights & Key Points
+            if "Action Insights & Key Points" in options:
+                st.subheader("Action Insights & Key Points")
+                insights = extract_action_insights(transcript)
+                for insight in insights:
+                    st.write(insight)
 
-            # Display the extracted links
-            if any(keyword in user_input.lower() for keyword in ["links", "hyperlinks"]):
-                st.subheader("Extracted Links")
-                for link in extracted_links:
-                    st.write(link)
+             #  Sentiment Analysis
+            if "Sentiment Analysis" in options:
+                st.subheader("Sentiment Analysis")
+                sentiment_results = analyze_sentiment(transcript)
+                for idx, sentiment in enumerate(sentiment_results):
+                    st.write(f"Sentiment {idx+1}: {sentiment}")
 
-            # Display the certificate links
-            if "certificates" in user_input.lower():
-                st.subheader("Certificate Links")
-                if certificate_links:
-                    for certificate_link in certificate_links:
-                        st.write(certificate_link)
+            # Given Task
+            if "Given Task" in options:
+                st.subheader("Given Task")
+                tasks = extract_task_from_transcript(transcript, "Extract task")
+                for task in tasks:
+                    st.write(task)
+            
+            # Chatbot
+            if "Chatbot" in options:
+                st.subheader("Chatbot")
+                user_question = st.text_input("Ask a question:")
+                if user_question:
+                    response = chatbot_interaction(transcript, user_question)
+                    st.write(response)
 
-        # Handle autoprompt button clicks
-        if education_button:
-            user_input = "Education"
-            chat_history.append("You: " + user_input+" give in points with each point in new line")
-            response = generate_response(user_input, resume_text)
-            chat_history.append("Chatbot: " + response)
-            st.subheader("Chat History")
-            for message in chat_history:
-                st.write(message)
-        elif projects_button:
-            user_input = "Projects and Links"
-            chat_history.append("You: " + user_input+" List")
-            response = generate_response(user_input, resume_text)
-            chat_history.append("Chatbot: " + response)
-            st.subheader("Chat History")
-            for message in chat_history:
-                st.write(message)
-        elif achievements_button:
-            user_input = "Achievements"
-            chat_history.append("You: " + user_input+" give in points with each point in new line")
-            response = generate_response(user_input, resume_text)
-            chat_history.append("Chatbot: " + response)
-            st.subheader("Chat History")
-            for message in chat_history:
-                st.write(message)
-        elif experience_button:
-            user_input = "Experience"
-            chat_history.append("You: " + user_input)
-            response = generate_response(user_input, resume_text)
-            chat_history.append("Chatbot: " + response)
-            st.subheader("Chat History")
-            for message in chat_history:
-                st.write(message)
-        elif github_button:
-            user_input = "GitHub Profile"
-            chat_history.append("You: " + user_input)
-            response = generate_response(user_input, resume_text)
-            chat_history.append("Chatbot: " + response)
-            st.subheader("Chat History")
-            for message in chat_history:
-                st.write(message)
-        elif linkedin_button:
-            user_input = "LinkedIn Profile"
-            chat_history.append("You: " + user_input)
-            response = generate_response(user_input, resume_text)
-            chat_history.append("Chatbot: " + response)
-            st.subheader("Chat History")
-            for message in chat_history:
-                st.write(message)
-        elif email_button:
-            user_input = "Email"
-            chat_history.append("You: " + user_input)
-            response = generate_response(user_input, resume_text)
-            chat_history.append("Chatbot: " + response)
-            st.subheader("Chat History")
-            for message in chat_history:
-                st.write(message)
-        elif mobile_button:
-            user_input = "Mobile Number"
-            chat_history.append("You: " + user_input)
-            response = generate_response(user_input, resume_text)
-            chat_history.append("Chatbot: " + response)
-            st.subheader("Chat History")
-            for message in chat_history:
-                st.write(message)
+    elif option == "Local File":
+        # File upload feature
+        uploaded_file = st.file_uploader("Upload a video file", type=["mp4"])
 
-    elif option == "Resume":
-        st.title("Resume")
-        # Load and display the resume image
-        image_path = 'resumeimage.jpg'  # Update with the path to your resume image file
-        image = Image.open(image_path)
-        st.image(image, caption='Rishika Agrawal', use_column_width=True)
-        st.markdown("[                          Click here to view the resume with hyperlinks](https://drive.google.com/file/d/1fXKS4A11qdVOrjB-woYNf3_4MAuv4xOV/view?usp=sharing)")
-        
+        if uploaded_file:
+            # Save the uploaded file
+            video_path = "uploaded_video.mp4"
+            with open(video_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+
+            # Extract transcript from video
+            transcript = ""  # Placeholder, replace with your logic to extract transcript from the local video
+
+            # Summarize transcript
+            summary = summarize_transcript(transcript)
+
+            st.info("Transcript processed successfully!")
+
+            # Display options
+            options = st.sidebar.multiselect("Select Options:", ["Meeting Summary", "Image Summary", "Action Insights & Key Points", "Sentiment Analysis", "Given Task", "Chatbot"])
+
+            # Meeting Summary
+            if "Meeting Summary" in options:
+                st.subheader("Meeting Summary")
+                st.text(summary)
+
+            # Image Summary
+            if "Image Summary" in options:
+                st.subheader("Image Summary")
+                key_frames, image_summary = extract_image_summary(video_path)
+                for idx, key_frame in enumerate(key_frames):
+                    st.image(key_frame, caption=f"Key Frame {idx+1}")
+                    st.write(image_summary[idx])
+
+            # Action Insights & Key Points
+            if "Action Insights & Key Points" in options:
+                st.subheader("Action Insights & Key Points")
+                insights = extract_action_insights(transcript)
+                for insight in insights:
+                    st.write(insight)
+
+            # Chatbot
+            if "Chatbot" in options:
+                st.subheader("Chatbot")
+                user_question = st.text_input("Ask a question:")
+                if user_question:
+                    response = chatbot_interaction(transcript, user_question)
+                    st.write(response)
+
+           #  Sentiment Analysis
+            if "Sentiment Analysis" in options:
+                st.subheader("Sentiment Analysis")
+                sentiment_results = analyze_sentiment(transcript)
+                for idx, sentiment in enumerate(sentiment_results):
+                    st.write(f"Sentiment {idx+1}: {sentiment}")
+
+           # Given Task
+            if "Given Task" in options:
+                st.subheader("Given Task")
+                tasks = extract_task_from_transcript(transcript, "Extract task")
+                for task in tasks:
+                    st.write(task)
+         
+
+            # Delete the uploaded video file
+            os.remove(video_path)
 
 if __name__ == "__main__":
     main()
-
