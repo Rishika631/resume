@@ -4,6 +4,11 @@ python-dotenv==1.0.0
 streamlit==1.18.1
 faiss-cpu==1.7.4
 altair<5
-transformers==4.10.0
+transformers==4.11.3
 torch
 pdf2image
+youtube_transcript_api==0.4.1
+moviepy==1.0.3
+torch==1.9.0
+openai
+spacy
