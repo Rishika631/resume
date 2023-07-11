@@ -5,7 +5,7 @@ import PyPDF2
 import re
 import openai
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 def load_resume_text(pdf_path):
     resume_text = ""
