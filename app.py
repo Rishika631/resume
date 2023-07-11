@@ -55,27 +55,6 @@ def calculate_contribution(tasks_with_persons):
 def extract_transcript_from_video(video_path):
     transcript = ""
     
-    # Convert video to audio
-    audio_path = "temp_audio.wav"
-    video = mp.VideoFileClip(video_path)
-    video.audio.write_audiofile(audio_path)
-
-    # Use Google Speech Recognition to extract transcript
-    r = sr.Recognizer()
-    with sr.AudioFile(audio_path) as source:
-        audio = r.record(source)
-
-    try:
-        transcript = r.recognize_google(audio)
-    except sr.UnknownValueError:
-        st.error("Speech recognition could not understand audio")
-    except sr.RequestError as e:
-        st.error("Could not request results from Google Speech Recognition service: {0}".format(e))
-
-    # Remove temporary audio file
-    os.remove(audio_path)
-
-    return transcript
 
 # Function to extract image summary from the video using moviepy
 def extract_image_summary(video_path):
