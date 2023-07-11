@@ -1,17 +1,14 @@
-import spacy
 import re
-import streamlit as st
-import openai
-from youtube_transcript_api import YouTubeTranscriptApi
-import moviepy.editor as mp
 import os
-from transformers import pipeline
-from urllib.parse import urlparse, parse_qs
 import pandas as pd
-import plotly.express as px
+import streamlit as st
+import moviepy.editor as mp
 import speech_recognition as sr
-
-# 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 -new api key - kartik
+from youtube_transcript_api import YouTubeTranscriptApi
+from urllib.parse import urlparse, parse_qs
+from transformers import pipeline
+import plotly.express as px
+import openai
 
 # Set OpenAI API credentials
 openai.api_key = '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'
@@ -21,18 +18,12 @@ st.set_page_config(page_title="YouTube Video Summarizer and Insights")
 
 # Function to extract transcript from YouTube video
 def extract_transcript(youtube_video):
-    video_id = youtube_video.split("=")[1]
+    video_id = parse_qs(urlparse(youtube_video).query)['v'][0]
     transcript = YouTubeTranscriptApi.get_transcript(video_id)
-
-    transcript_text = ""
-    for segment in transcript:
-        transcript_text += segment['text'] + " "
-
+    transcript_text = " ".join([segment['text'] for segment in transcript])
     return transcript_text
 
-
-
-# Function to summarize transcript using OpenAI's text Meeting Summary model
+# Function to summarize transcript using OpenAI's text-davinci-003 model
 def summarize_transcript(transcript):
     prompt = "Extract summary from the following transcript in 100 words:\n\n" + transcript
     response = openai.Completion.create(
@@ -51,7 +42,7 @@ def summarize_transcript(transcript):
 
     return summary, persons
 
-
+# Function to calculate contribution based on assigned tasks
 def calculate_contribution(tasks_with_persons):
     tasks_df = pd.DataFrame(tasks_with_persons)
     contribution_df = tasks_df["person"].value_counts().reset_index()
@@ -60,9 +51,8 @@ def calculate_contribution(tasks_with_persons):
     contribution_df["Contribution"] = contribution_df["Tasks Assigned"] / total_tasks * 100
     return contribution_df
 
-
 # Function to extract transcript from video
-def extract_transcript(video_path):
+def extract_transcript_from_video(video_path):
     transcript = ""
     
     # Convert video to audio
@@ -80,15 +70,14 @@ def extract_transcript(video_path):
     except sr.UnknownValueError:
         st.error("Speech recognition could not understand audio")
     except sr.RequestError as e:
-        st.error("Could not request results from Google Speech Recognition service; {0}".format(e))
+        st.error("Could not request results from Google Speech Recognition service: {0}".format(e))
 
     # Remove temporary audio file
     os.remove(audio_path)
 
     return transcript
 
-
-# Function to extract Image Summary from the video using moviepy
+# Function to extract image summary from the video using moviepy
 def extract_image_summary(video_path):
     clip = mp.VideoFileClip(video_path)
     duration = clip.duration
@@ -104,7 +93,7 @@ def extract_image_summary(video_path):
 
     return key_frames, image_summary
 
-# Function to extract action insights & Key Points from transcript 
+# Function to extract action insights & key points from transcript 
 def extract_action_insights(transcript):
     prompt = "Extract action insights and key points both from the following transcript:\n\n" + transcript
     response = openai.Completion.create(
@@ -119,7 +108,7 @@ def extract_action_insights(transcript):
     insights = response.choices[0].text.strip().split("\n")
     return insights
 
-
+# Function to analyze sentiment of the transcript
 def analyze_sentiment(transcript):
     sentiment_analyzer = pipeline("sentiment-analysis")
     results = sentiment_analyzer(transcript)
@@ -127,8 +116,7 @@ def analyze_sentiment(transcript):
     sentiments = [result["label"] for result in results]
     return sentiments
 
-# Function to extract a given task 
-
+# Function to extract given task from transcript
 def extract_task_from_transcript(transcript, task):
     prompt = f"{task} from the following transcript and mention to whom the task is given:\n\n{transcript}"
     response = openai.Completion.create(
@@ -150,12 +138,9 @@ def extract_task_from_transcript(transcript, task):
 
     return tasks_with_persons
 
-
-
-
 # Function to perform chatbot interaction
 def chatbot_interaction(transcript, question):
-    # Use LangChain API or any other OpenAI model API for chatbot
+    # Use OpenAI model API for chatbot interaction
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=f"Transcript: {transcript}\nQuestion: {question}",
@@ -188,12 +173,12 @@ def main():
             transcript = extract_transcript(youtube_video)
 
             # Summarize transcript
-            summary = summarize_transcript(transcript)
+            summary, persons = summarize_transcript(transcript)
 
             st.info("Meeting processed successfully!")
 
             # Display options
-            options = st.sidebar.multiselect("Select Options:", ["Meeting Summary", "Image Summary", "Action Insights & Key Points", "Sentiment Analysis", "Given Task", "Contribution Chart"])
+            options = st.sidebar.multiselect("Select Options:", ["Meeting Summary", "Image Summary", "Action Insights & Key Points", "Sentiment Analysis", "Given Task", "Contribution Chart", "Chatbot"])
 
             # Meeting Summary
             if "Meeting Summary" in options:
@@ -215,7 +200,7 @@ def main():
                 for insight in insights:
                     st.write(insight)
 
-             #  Sentiment Analysis
+            # Sentiment Analysis
             if "Sentiment Analysis" in options:
                 st.subheader("Sentiment Analysis")
                 sentiment_results = analyze_sentiment(transcript)
@@ -229,12 +214,13 @@ def main():
                 tasks_df = pd.DataFrame(tasks_with_persons)
                 st.dataframe(tasks_df)
 
+            # Contribution Chart
             if "Contribution Chart" in options:
                 st.subheader("Contribution Chart")
                 contribution_df = calculate_contribution(tasks_with_persons)
                 fig = px.pie(contribution_df, values='Contribution', names='Person')
                 st.plotly_chart(fig)
-            
+
             # Chatbot
             if "Chatbot" in options:
                 st.subheader("Chatbot")
@@ -254,10 +240,10 @@ def main():
                 f.write(uploaded_file.getbuffer())
 
             # Extract transcript from video
-            transcript = ""  # Placeholder, replace with your logic to extract transcript from the local video
+            transcript = extract_transcript_from_video(video_path)
 
             # Summarize transcript
-            summary = summarize_transcript(transcript)
+            summary, persons = summarize_transcript(transcript)
 
             st.info("Transcript processed successfully!")
 
@@ -284,6 +270,20 @@ def main():
                 for insight in insights:
                     st.write(insight)
 
+            # Sentiment Analysis
+            if "Sentiment Analysis" in options:
+                st.subheader("Sentiment Analysis")
+                sentiment_results = analyze_sentiment(transcript)
+                for idx, sentiment in enumerate(sentiment_results):
+                    st.write(f"Sentiment {idx+1}: {sentiment}")
+
+            # Given Task
+            if "Given Task" in options:
+                st.subheader("Given Task")
+                tasks_with_persons = extract_task_from_transcript(transcript, "Extract task")
+                tasks_df = pd.DataFrame(tasks_with_persons)
+                st.dataframe(tasks_df)
+
             # Chatbot
             if "Chatbot" in options:
                 st.subheader("Chatbot")
@@ -291,21 +291,6 @@ def main():
                 if user_question:
                     response = chatbot_interaction(transcript, user_question)
                     st.write(response)
-
-           #  Sentiment Analysis
-            if "Sentiment Analysis" in options:
-                st.subheader("Sentiment Analysis")
-                sentiment_results = analyze_sentiment(transcript)
-                for idx, sentiment in enumerate(sentiment_results):
-                    st.write(f"Sentiment {idx+1}: {sentiment}")
-
-           # Given Task
-            if "Given Task" in options:
-                st.subheader("Given Task")
-                tasks = extract_task_from_transcript(transcript, "Extract task")
-                for task in tasks:
-                    st.write(task)
-         
 
             # Delete the uploaded video file
             os.remove(video_path)
